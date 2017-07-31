@@ -1,1 +1,7 @@
 MP4 Linux
+main（int argc,char *argv[]）
+argv[0]  [可执行文件]
+argv[1]  [要读取的MP4文件，带上后缀]
+argv[2]  [-a] --功能1：树型打印box列表
+	 [-b] --功能2：记录并打印每个sample的index和大小，判断帧类型
+argv[3]  [I/P/B] --只有在argv[2] == [-b] 才有效，用于选择性地只打印出I/P/B帧的信息
