@@ -11,6 +11,7 @@ uint32_t chunkLinkCount;
 
 char* strFrameType[7]={"I帧","P帧","B帧","SEI帧","SI帧","SP帧","其它"};
 int numFrameType[7]={0}; 
+int frameChoice = -1;  // I P B -- 0 1 2
 
 uint32_t decodeUint32(uint8_t head[4])
 {
@@ -467,7 +468,10 @@ void getFrameType(FILE* fp)
 			str = 6;
 			numFrameType[6]++;
 		}
-		printf("\033[37m%d.\033[34m%s \033[32m--from:%X \033[33m--size:%X\033[0m\n",i+1,strFrameType[str],sampleIndex[i],sampleSize[i]);
+		if(frameChoice == -1)
+		  printf("\033[37m%d.\033[34m%s \033[32m--from:%X \033[33m--size:%X\033[0m\n",i+1,strFrameType[str],sampleIndex[i],sampleSize[i]);
+		else if(frameChoice == str )
+		  printf("\033[37m%d.\033[34m%s \033[32m--from:%X \033[33m--size:%X\033[0m\n",i+1,strFrameType[str],sampleIndex[i],sampleSize[i]);
 	}
 	
 	printf("\n总计：\n帧的总数：%d\n\n",sampleCount);
@@ -535,8 +539,8 @@ uint32_t getBoxList(FILE* fp, int floor, uint32_t length)
 	startIndex = ftell(fp);
 	i = fread(size,1,4,fp);
 	j = fread(type,1,4,fp);
-    boxSize = decodeUint32(size);
-    boxType = decodeUint32(type);
+    	boxSize = decodeUint32(size);
+        boxType = decodeUint32(type);
     
     if(i==0 || j == 0)
     	return -1;
@@ -554,7 +558,7 @@ uint32_t getBoxList(FILE* fp, int floor, uint32_t length)
     for(i=0;i<floor;++i)
     	printf("  ");
 	
-	printf("\033[%dm%s --from: %X --size: %X\033[0m\n",color[floor],str,startIndex,boxSize);
+	printf("\033[%dm%s --from: %X --size: %X\033[0m\n",color[floor],str,(uint32_t)startIndex,boxSize);
 	
 	if(m == 0){
 		fseek(fp,boxSize-8,SEEK_CUR);
@@ -607,7 +611,14 @@ int main(int argc,char *argv[])
 	   if(strcmp(argv[2],"-a")==0){
 		choice = 1;}
 	   else if(strcmp(argv[2],"-b")==0){
-		choice = 2;}
+		choice = 2;
+		if(argc == 4){
+		   if(strcmp(argv[3],"I")==0) frameChoice = 0;
+		   else if(strcmp(argv[3],"P")==0) frameChoice = 1;
+		   else if(strcmp(argv[3],"B")==0) frameChoice = 2;
+	           else { printf("error:[%s]-未定义的参数\n",argv[3]); return 0;}
+		}
+	   }
 	   else{
 		printf("error:[%s]-未定义的参数\n",argv[2]);
 	   }
